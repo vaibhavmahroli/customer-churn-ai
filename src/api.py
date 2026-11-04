@@ -1,13 +1,14 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
-from src.database import SessionLocal
+from src.database import SessionLocal, Base, engine
 from src.models import CustomerRecord, PredictionRecord
 
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 import joblib
+
 
 def get_db():
     db = SessionLocal()
@@ -23,7 +24,11 @@ app = FastAPI(
     description="AI-powered customer churn prediction",
     version="1.0"
 )
-
+@app.on_event("startup")
+def create_tables():
+    Base.metadata.create_all(bind=engine)
+    print("Database tables checked/created successfully")
+    
 # Load trained ML model
 model = joblib.load("models/churn_model.pkl")
 
