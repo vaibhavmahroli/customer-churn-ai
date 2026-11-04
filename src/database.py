@@ -1,21 +1,32 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# SQLite database location
-DATABASE_URL = "sqlite:///./churn_database.db"
-
-# Create database engine
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./churn_database.db"
 )
 
-# Create database session
+print(
+    "Database selected:",
+    "PostgreSQL" if DATABASE_URL.startswith("postgresql://") else "SQLite"
+)
+
+connect_args = (
+    {"check_same_thread": False}
+    if DATABASE_URL.startswith("sqlite")
+    else {}
+)
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args=connect_args
+)
+
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine
 )
 
-# Base class for database tables
 Base = declarative_base()
